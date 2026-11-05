@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculateur de Moyenne - Génie Civil</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+    .card { background-color: #1e293b; border: 1px solid #334155; }
+    .input-field { background-color: #0f172a; border: 1px solid #475569; color: #f8fafc; }
+    .input-field:focus { border-color: #38bdf8; outline: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 md:p-8">
+
+  <!-- EN-TÊTE -->
+  <header class="max-w-5xl mx-auto w-full mb-6">
+    <div class="card p-6 rounded-2xl shadow-xl text-center">
+      <h1 class="text-2xl md:text-3xl font-bold text-sky-400">Calculateur de Moyenne - Génie Civil</h1>
+      <p class="text-slate-400 text-sm mt-1">Créé par <span class="text-white font-semibold">Djedjig Yahia</span></p>
+    </div>
+  </header>
+
+  <!-- CONTENU PRINCIPAL -->
+  <main class="max-w-5xl mx-auto w-full flex-1">
+    
+    <!-- SELECTION DU SEMESTRE -->
+    <div class="flex justify-center gap-4 mb-8">
+      <button onclick="setSemestre('S5')" id="btn-S5" class="px-6 py-3 rounded-xl font-bold transition-all bg-sky-500 text-white shadow-lg shadow-sky-500/30">
+        Semestre 5 (Coeff 19)
+      </button>
+      <button onclick="setSemestre('S6')" id="btn-S6" class="px-6 py-3 rounded-xl font-bold transition-all bg-slate-700 text-slate-300 hover:bg-slate-600">
+        Semestre 6 (Coeff 19)
+      </button>
+    </div>
+
+    <!-- RÉSULTAT GENERAL -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div class="card p-5 rounded-xl text-center">
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Total des Points</p>
+        <p id="total-points" class="text-3xl font-extrabold text-white">0.00</p>
+      </div>
+      <div class="card p-5 rounded-xl text-center">
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Moyenne Générale</p>
+        <p id="moyenne-generale" class="text-4xl font-extrabold text-sky-400">0.000</p>
+      </div>
+      <div class="card p-5 rounded-xl text-center">
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Statut du Semestre</p>
+        <p id="statut-semestre" class="text-lg font-bold text-amber-400 mt-2">EN ATTENTE</p>
+      </div>
+    </div>
+
+    <!-- TABLEAU DES MODULES -->
+    <div class="card rounded-2xl overflow-hidden shadow-xl mb-8">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-800 text-slate-300 uppercase text-xs font-semibold">
+            <tr>
+              <th class="p-4">Module</th>
+              <th class="p-4 text-center">Coeff</th>
+              <th class="p-4 text-center">Notes d'évaluation</th>
+              <th class="p-4 text-center">Note / 20</th>
+              <th class="p-4 text-center">Points</th>
+            </tr>
+          </thead>
+          <tbody id="modules-body" class="divide-y divide-slate-700/50">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- PIED DE PAGE -->
+  <footer class="max-w-5xl mx-auto w-full text-center py-4 border-t border-slate-800 text-slate-400 text-sm">
+    <p>Créé par <span class="text-white font-medium">Djedjig Yahia</span></p>
+  </footer>
+
+  <script>
+    var dataModules = {
+      S5: [
+        { id: "mdc", nom: "MDC (Matériaux de Construction)", coeff: 2, hasTd: true, hasTp: false, hasEx: true, formula: 'standard' },
+        { id: "cds", nom: "CDS (Calcul des Structures)", coeff: 3, hasTd: true, hasTp: false, hasEx: true, formula: 'standard' },
+        { id: "topo", nom: "Topo (Topographie)", coeff: 2, hasTd: true, hasTp: false, hasEx: true, formula: 'standard' },
+        { id: "ba", nom: "BA (Béton Armé)", coeff: 2, hasTd: true, hasTp: false, hasEx: true, formula: 'standard' },
+        { id: "cm2", nom: "CM2 (Charpente Métallique 2)", coeff: 2, hasTd: true, hasTp: false, hasEx: true, formula: 'standard' },
+        { id: "mds2", nom: "MDS2 (Mécanique des Sols 2)", coeff: 3, hasTd: true, hasTp: true, hasEx: true, formula: 'mds' },
+        { id: "egd", nom: "EGD (Environnement & Déchets)", coeff: 1, hasTd: false, hasTp: false, hasEx: true, formula: 'exOnly' },
+        { id: "ogc", nom: "OGC (Gestion des Chantiers)", coeff: 1, hasTd: false, hasTp: false, hasEx: true, formula: 'exOnly' },
+        { id: "anglais", nom: "Anglais", coeff: 1, hasTd: false, hasTp: false, hasEx: true, formula: 'exOnly' },
+        { id: "dao", nom: "DAO", coeff: 2, hasTd: false, hasTp: true, hasEx: false, formula: 'tpOnly' }
+      ],
+      S6: [
+        { id: "ba3", nom: "Béton armé 3", coeff: 3, hasTd: true, hasTp: false, hasEx: true, formula: 'standard' },
+        { id: "cm3", nom: "Charpente métallique 3", coeff: 3, hasTd: true, hasTp: false, hasEx: true, formula: 'standard' },
+        { id: "pcm", nom: "Projet en Charpente métallique", coeff: 2, hasTd: false, hasTp: true, hasEx: false, formula: 'tpOnly' },
+        { id: "pba", nom: "Projet en Béton armé", coeff: 2, hasTd: false, hasTp: true, hasEx: false, formula: 'tpOnly' },
+        { id: "vrd", nom: "Voiries et Réseaux Divers (VRD)", coeff: 2, hasTd: true, hasTp: false, hasEx: true, formula: 'standard' },
+        { id: "fond", nom: "Fondations & Ouvrages Géotechniques", coeff: 2, hasTd: true, hasTp: false, hasEx: true, formula: 'standard' },
+        { id: "ddc", nom: "Développement Durable des Const.", coeff: 2, hasTd: true, hasTp: false, hasEx: true, formula: 'standard' },
+        { id: "stage", nom: "STAGE", coeff: 1, hasTd: false, hasTp: false, hasEx: true, formula: 'exOnly' },
+        { id: "ent", nom: "ENTREPRENEURIAT ET STARTUP", coeff: 1, hasTd: false, hasTp: false, hasEx: true, formula: 'exOnly' },
+        { id: "cao2", nom: "CAO2", coeff: 1, hasTd: false, hasTp: true, hasEx: false, formula: 'tpOnly' }
+      ]
+    };
+
+    var currentSemestre = 'S5';
+
+    function setSemestre(s) {
+      currentSemestre = s;
+      document.getElementById('btn-S5').className = s === 'S5' ? 'px-6 py-3 rounded-xl font-bold transition-all bg-sky-500 text-white shadow-lg shadow-sky-500/30' : 'px-6 py-3 rounded-xl font-bold transition-all bg-slate-700 text-slate-300 hover:bg-slate-600';
+      document.getElementById('btn-S6').className = s === 'S6' ? 'px-6 py-3 rounded-xl font-bold transition-all bg-sky-500 text-white shadow-lg shadow-sky-500/30' : 'px-6 py-3 rounded-xl font-bold transition-all bg-slate-700 text-slate-300 hover:bg-slate-600';
+      renderTable();
+      calculer();
+    }
+
+    function renderTable() {
+      var body = document.getElementById('modules-body');
+      var html = '';
+      var list = dataModules[currentSemestre];
+
+      for (var i = 0; i < list.length; i++) {
+        var m = list[i];
+        var inputs = '<div class="flex justify-center gap-2">';
+        if (m.hasTd) inputs += '<input type="number" step="0.25" min="0" max="20" placeholder="TD" oninput="calculer()" id="' + m.id + '_td" class="input-field w-16 p-2 text-center rounded-lg text-sm">';
+        if (m.hasTp) inputs += '<input type="number" step="0.25" min="0" max="20" placeholder="TP" oninput="calculer()" id="' + m.id + '_tp" class="input-field w-16 p-2 text-center rounded-lg text-sm">';
+        if (m.hasEx) inputs += '<input type="number" step="0.25" min="0" max="20" placeholder="Examen" oninput="calculer()" id="' + m.id + '_ex" class="input-field w-20 p-2 text-center rounded-lg text-sm font-semibold">';
+        inputs += '</div>';
+
+        html += '<tr class="hover:bg-slate-800/50">' +
+          '<td class="p-4 font-medium text-slate-200">' + m.nom + '</td>' +
+          '<td class="p-4 text-center font-bold text-slate-400">' + m.coeff + '</td>' +
+          '<td class="p-4 text-center">' + inputs + '</td>' +
+          '<td class="p-4 text-center font-bold text-sky-400" id="' + m.id + '_note">0.00</td>' +
+          '<td class="p-4 text-center font-bold text-slate-300" id="' + m.id + '_pts">0.00</td>' +
+          '</tr>';
+      }
+      body.innerHTML = html;
+    }
+
+    function getNote(m) {
+      var td = m.hasTd ? (parseFloat(document.getElementById(m.id + '_td').value) || 0) : 0;
+      var tp = m.hasTp ? (parseFloat(document.getElementById(m.id + '_tp').value) || 0) : 0;
+      var ex = m.hasEx ? (parseFloat(document.getElementById(m.id + '_ex').value) || 0) : 0;
+
+      if (m.formula === 'standard') return (td * 0.4) + (ex * 0.6);
+      if (m.formula === 'mds') return (td * 0.2) + (tp * 0.2) + (ex * 0.6);
+      if (m.formula === 'exOnly') return ex;
+      if (m.formula === 'tpOnly') return tp;
+      return 0;
+    }
+
+    function calculer() {
+      var totalPts = 0;
+      var list = dataModules[currentSemestre];
+      var noteEliminatoire = false;
+
+      for (var i = 0; i < list.length; i++) {
+        var m = list[i];
+        var note = getNote(m);
+        var pts = note * m.coeff;
+        totalPts += pts;
+
+        // Vérification de la note éliminatoire (< 5)
+        var elTd = m.hasTd ? document.getElementById(m.id + '_td').value : '';
+        var elTp = m.hasTp ? document.getElementById(m.id + '_tp').value : '';
+        var elEx = m.hasEx ? document.getElementById(m.id + '_ex').value : '';
+        
+        // On ne vérifie la note éliminatoire que si l'utilisateur a entré au moins une valeur
+        if ((elTd !== '' || elTp !== '' || elEx !== '') && note < 5) {
+          noteEliminatoire = true;
+        }
+
+        document.getElementById(m.id + '_note').innerText = note.toFixed(2);
+        document.getElementById(m.id + '_pts').innerText = pts.toFixed(2);
+      }
+
+      var moyenne = totalPts / 19;
+      document.getElementById('total-points').innerText = totalPts.toFixed(2);
+      document.getElementById('moyenne-generale').innerText = moyenne.toFixed(3);
+
+      var statut = document.getElementById('statut-semestre');
+      
+      // Logique d'affichage des résultats
+      if (moyenne >= 10 && !noteEliminatoire) {
+        statut.innerText = "SEMESTRE VALIDÉ 🎉";
+        statut.className = "text-lg font-bold text-emerald-400 mt-2";
+      } else if (moyenne >= 10 && noteEliminatoire) {
+        statut.innerText = "NON VALIDÉ ❌ (Note < 5)";
+        statut.className = "text-lg font-bold text-rose-500 mt-2";
+      } else {
+        statut.innerText = "NON VALIDÉ ❌";
+        statut.className = "text-lg font-bold text-rose-400 mt-2";
+      }
+    }
+
+    // Exécution immédiate au chargement de la page
+    renderTable();
+    calculer();
+  </script>
+</body>
+</html>
